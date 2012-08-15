@@ -193,8 +193,10 @@ android::status_t android_eq_getParam(android::sp<android::AudioEffect> pFx,
         int32_t param, int32_t param2, void *pValue)
 {
      android::status_t status;
-     uint32_t buf32[(EQUALIZER_PARAM_SIZE_MAX - 1) / sizeof(uint32_t) + 1];
-     effect_param_t *p = (effect_param_t *)buf32;
+     union {
+         uint32_t buf32[(EQUALIZER_PARAM_SIZE_MAX - 1) / sizeof(uint32_t) + 1];
+         effect_param_t *p;
+     };
 
      p->psize = eq_paramSize(param);
      memcpy(p->data, &param, sizeof(param));
@@ -219,8 +221,10 @@ android::status_t android_eq_setParam(android::sp<android::AudioEffect> pFx,
         int32_t param, int32_t param2, void *pValue)
 {
     android::status_t status;
-    uint32_t buf32[(EQUALIZER_PARAM_SIZE_MAX - 1) / sizeof(uint32_t) + 1];
-    effect_param_t *p = (effect_param_t *)buf32;
+    union {
+        uint32_t buf32[(EQUALIZER_PARAM_SIZE_MAX - 1) / sizeof(uint32_t) + 1];
+        effect_param_t *p;
+    };
 
     p->psize = eq_paramSize(param);
     memcpy(p->data, &param, sizeof(int32_t));
@@ -567,8 +571,11 @@ android::status_t android_fx_setParam(android::sp<android::AudioEffect> pFx,
 {
 
     android::status_t status;
-    uint32_t buf32[(paramSizeMax - 1) / sizeof(uint32_t) + 1];
-    effect_param_t *p = (effect_param_t *)buf32;
+    union {
+        uint32_t *buf32;
+        effect_param_t *p;
+    };
+    buf32=new uint32_t[(paramSizeMax - 1) / sizeof(uint32_t) + 1];
 
     p->psize = sizeof(int32_t);
     memcpy(p->data, &param, sizeof(param));
@@ -578,6 +585,7 @@ android::status_t android_fx_setParam(android::sp<android::AudioEffect> pFx,
     if (android::NO_ERROR == status) {
         status = p->status;
     }
+    delete[] buf32;
     return status;
 }
 
@@ -587,8 +595,11 @@ android::status_t android_fx_getParam(android::sp<android::AudioEffect> pFx,
         int32_t param, uint32_t paramSizeMax, void *pValue, uint32_t valueSize)
 {
     android::status_t status;
-    uint32_t buf32[(paramSizeMax - 1) / sizeof(uint32_t) + 1];
-    effect_param_t *p = (effect_param_t *)buf32;
+    union {
+        uint32_t *buf32;
+        effect_param_t *p;
+    };
+    buf32=new uint32_t[(paramSizeMax - 1) / sizeof(uint32_t) + 1];
 
     p->psize = sizeof(int32_t);
     memcpy(p->data, &param, sizeof(param));
@@ -601,6 +612,7 @@ android::status_t android_fx_getParam(android::sp<android::AudioEffect> pFx,
         }
     }
 
+    delete[] buf32;
     return status;
 }
 
